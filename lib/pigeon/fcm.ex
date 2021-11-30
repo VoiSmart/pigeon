@@ -75,11 +75,11 @@ defmodule Pigeon.FCM do
   ```
   n = Pigeon.FCM.Notification.new({:token, "reg ID"}, %{"body" => "test message"})
   ```
-   
-  5. Send the notification. 
 
-  On successful response, `:name` will be set to the name returned from the FCM 
-  API and `:response` will be `:success`. If there was an error, `:error` will 
+  5. Send the notification.
+
+  On successful response, `:name` will be set to the name returned from the FCM
+  API and `:response` will be `:success`. If there was an error, `:error` will
   contain a JSON map of the response and `:response` will be an atomized version
   of the error type.
 
@@ -158,7 +158,13 @@ defmodule Pigeon.FCM do
     case connect_socket(config) do
       {:ok, socket} ->
         Configurable.schedule_ping(config)
-        {:noreply, %{state | socket: socket}}
+
+        state =
+          state
+          |> reset_stream_id()
+          |> Map.put(:socket, socket)
+
+        {:noreply, state}
 
       {:error, reason} ->
         {:stop, reason}
@@ -236,5 +242,10 @@ defmodule Pigeon.FCM do
   @doc false
   def inc_stream_id(%{stream_id: stream_id} = state) do
     %{state | stream_id: stream_id + 2}
+  end
+
+  @doc false
+  def reset_stream_id(state) do
+    %{state | stream_id: 1}
   end
 end
