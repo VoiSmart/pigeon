@@ -61,7 +61,7 @@ defmodule Pigeon.LegacyFCM do
 
     defp legacy_fcm_opts do
       [
-        adapter: Pigeon.LegacyFCM, 
+        adapter: Pigeon.LegacyFCM,
         key: "your_fcm_key_here"
       ]
     end
@@ -74,8 +74,8 @@ defmodule Pigeon.LegacyFCM do
   msg = %{"body" => "your message"}
   n = Pigeon.LegacyFCM.Notification.new("your device registration ID", msg)
   ```
-   
-  5. Send the notification. 
+
+  5. Send the notification.
 
   Pushes are synchronous and return the notification with
   updated `:status` and `:response` keys. If `:status` is success, `:response`
@@ -239,7 +239,13 @@ defmodule Pigeon.LegacyFCM do
     case connect_socket(config) do
       {:ok, socket} ->
         Configurable.schedule_ping(config)
-        {:noreply, %{state | socket: socket}}
+
+        state =
+          state
+          |> reset_stream_id()
+          |> Map.put(:socket, socket)
+
+        {:noreply, state}
 
       {:error, reason} ->
         {:stop, reason}
@@ -283,5 +289,10 @@ defmodule Pigeon.LegacyFCM do
   @doc false
   def inc_stream_id(%{stream_id: stream_id} = state) do
     %{state | stream_id: stream_id + 2}
+  end
+
+  @doc false
+  def reset_stream_id(state) do
+    %{state | stream_id: 1}
   end
 end

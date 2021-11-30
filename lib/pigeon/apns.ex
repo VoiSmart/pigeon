@@ -88,7 +88,7 @@ defmodule Pigeon.APNS do
   ```
   n = Pigeon.APNS.Notification.new("your message", "your device token", "your push topic")
   ```
-   
+
   5. Send the packet. Pushes are synchronous and return the notification with an
    updated `:response` key.
 
@@ -133,8 +133,8 @@ defmodule Pigeon.APNS do
   openssl pkcs12 -clcerts -nokeys -out cert.pem -in cert.p12
   ```
 
-  6. Convert the key. Be sure to set a PEM pass phrase here. The pass phrase must be 4 or 
-     more characters in length or this will not work. You will need that pass phrase added 
+  6. Convert the key. Be sure to set a PEM pass phrase here. The pass phrase must be 4 or
+     more characters in length or this will not work. You will need that pass phrase added
      here in order to remove it in the next step.
 
   ```
@@ -206,7 +206,13 @@ defmodule Pigeon.APNS do
     case connect_socket(config) do
       {:ok, socket} ->
         Configurable.schedule_ping(config)
-        {:noreply, %{state | socket: socket}}
+
+        state =
+          state
+          |> reset_stream_id()
+          |> Map.put(:socket, socket)
+
+        {:noreply, state}
 
       {:error, reason} ->
         {:stop, reason}
@@ -250,5 +256,10 @@ defmodule Pigeon.APNS do
   @doc false
   def inc_stream_id(%{stream_id: stream_id} = state) do
     %{state | stream_id: stream_id + 2}
+  end
+
+  @doc false
+  def reset_stream_id(state) do
+    %{state | stream_id: 1}
   end
 end
