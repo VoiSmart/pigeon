@@ -87,6 +87,7 @@ defmodule Pigeon.FCM do
   YourApp.FCM.push(n)
   ```
   """
+  require Logger
 
   @max_retries 3
 
@@ -231,6 +232,7 @@ defmodule Pigeon.FCM do
     case NotificationQueue.pop(queue, stream_id) do
       {nil, new_queue} ->
         # Do nothing if no queued item for stream
+        Logger.debug("[FCM Adapter] - Cannot find stream: #{inspect(stream)}")
         {:noreply, %{state | queue: new_queue}}
 
       {notif, new_queue} ->

@@ -26,6 +26,7 @@ defmodule Pigeon do
   """
 
   alias Pigeon.Tasks
+  require Logger
 
   @default_timeout 5_000
 
@@ -117,7 +118,10 @@ defmodule Pigeon do
   defp push_sync(pid, notification, timeout) do
     myself = self()
     ref = :erlang.make_ref()
-    on_response = fn x -> send(myself, {:"$push", ref, x}) end
+    on_response = fn x ->
+      Logger.debug("[Pigeon] - Received push notification response: #{inspect(x)}")
+      send(myself, {:"$push", ref, x})
+    end
     notification = put_on_response(notification, on_response)
 
     push_async(pid, notification)
