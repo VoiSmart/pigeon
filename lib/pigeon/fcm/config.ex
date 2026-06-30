@@ -96,6 +96,11 @@ defimpl Pigeon.Configurable, for: Pigeon.FCM.Config do
         {:active, :once},
         {:packet, :raw},
         {:reuseaddr, true},
+        # fcm.googleapis.com may serve a *.googleapis.com wildcard cert, which
+        # :ssl's default hostname check rejects (bad_cert, hostname_check_failed).
+        # Use the HTTPS match_fun so wildcard SANs are accepted.
+        {:customize_hostname_check,
+         [match_fun: :public_key.pkix_verify_hostname_match_fun(:https)]},
         {:alpn_advertised_protocols, [<<"h2">>]},
         :binary
       ]
